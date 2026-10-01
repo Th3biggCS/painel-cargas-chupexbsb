@@ -283,6 +283,12 @@
   .live .chip.busy { opacity: .55; pointer-events: none; }
   #hdrGerado.err { color: #b3261e; font-weight: 600; }
   @media print { .live { display: none; } }
+  .flt-row th { padding: 3px 4px !important; background: var(--surface); border-bottom: 1px solid var(--baseline); font-weight: 400; }
+  .flt { width: 100%; min-width: 0; font: inherit; font-size: 11px; padding: 3px 5px; border: 1px solid var(--grid); border-radius: 6px; background: #fff; color: var(--text-primary); }
+  .flt:focus { outline: 2px solid var(--brand-blue); outline-offset: -1px; }
+  .flt.on { border-color: var(--brand-blue); background: #eaf2fc; }
+  .flt-row .flt-clear { font-size: 11px; color: var(--brand-blue); background: none; border: 0; cursor: pointer; padding: 0 4px; text-decoration: underline; }
+  @media print { .flt-row { display: none; } }
   .sub-per { display: block; font-weight: 500; font-size: 11.5px; color: var(--muted); margin-top: 2px; }
   #tblVisao td.link { min-width: 215px; }
   #fGeral th { white-space: nowrap; }
@@ -633,7 +639,24 @@ function buildClosings(from, to) {
     return { tr, ini: from, fim: to, excl: [], rows, pend };
   }).filter(c => c.rows.length);
 }
+const FLT = {};
 const slug = s => 'car-' + s.replace(/[^A-Za-z0-9]+/g, '-');
+function applyFlt(card) {
+  const inputs = [...card.querySelectorAll('.flt')];
+  const act = inputs.filter(i => i.value.trim() !== '');
+  inputs.forEach(i => i.classList.toggle('on', i.value.trim() !== ''));
+  const rows = [...card.querySelectorAll('tbody tr')];
+  const t = { n: 0, vf: 0, ve: 0, dif: 0, vfisc: 0, compl: 0, vfis: 0 };
+  rows.forEach(tr => {
+    const ok = act.every(i => String(tr.dataset[i.dataset.col] || '').toLowerCase().indexOf(i.value.trim().toLowerCase()) >= 0);
+    tr.hidden = !ok;
+    if (ok) { t.n++; ['vf', 've', 'dif', 'vfisc', 'compl', 'vfis'].forEach(k => t[k] += parseFloat(tr.dataset[k])); }
+  });
+  const tds = card.querySelectorAll('tfoot td');
+  tds[0].textContent = act.length ? 'TOTAL FILTRADO — ' + t.n + ' de ' + rows.length + ' CT-e' : 'TOTAL — ' + plural(rows.length, 'CT-e', 'CT-e');
+  [t.vf, t.ve, t.dif, null, t.vfisc, t.compl, t.vfis].forEach((v, i) => { if (v !== null) tds[i + 1].textContent = i < 3 ? fmt2(v) : fmtMoney(v); });
+  const cnt = card.querySelector('[data-cnt]'); if (cnt) cnt.textContent = act.length ? t.n + ' de ' + rows.length + ' linhas' : '';
+}
 function renderFech(from, to) {
   const cl = buildClosings(from, to);
   cl.forEach(c => c.t = roll(c.rows));
@@ -682,8 +705,9 @@ function renderFech(from, to) {
         '<th class="grp-blank" rowspan="2">Placa</th><th class="grp-blank" rowspan="2">Motorista</th>' +
         '<th class="grp-vol" colspan="3">Volume (m³)</th><th class="grp-blank r" rowspan="2">Frete (R$/m³)</th><th class="grp-compl" colspan="3">Valores (R$)</th>' +
         '<th class="grp-blank ctr" rowspan="2">Data transporte</th></tr>' +
-        '<tr class="sub-row"><th>Fiscal</th><th>Entregue</th><th>Difer.</th><th>Fiscal</th><th>Complemento</th><th>Físico</th></tr></thead><tbody>' +
-      c.rows.map(r => '<tr><td class="nowrap">' + isoToBR(r.d) + '</td><td class="num">' + r.nf + '</td><td class="num">' + esc(r.cte || '—') +
+        '<tr class="sub-row"><th>Fiscal</th><th>Entregue</th><th>Difer.</th><th>Fiscal</th><th>Complemento</th><th>Físico</th></tr>' +
+        '<tr class="flt-row">' + ['d:Filtrar', 'nf:…', 'cte:…', 'pl:Filtrar', 'mot:Filtrar'].map(x => { const k = x.split(':')[0]; return '<th><input class="flt" data-col="' + k + '" data-car="' + slug(c.tr) + '" placeholder="' + x.split(':')[1] + '" aria-label="Filtrar ' + k + '" value="' + esc(FLT[slug(c.tr) + '|' + k] || '') + '"></th>'; }).join('') + '<th colspan="7" style="text-align:left"><button type="button" class="flt-clear" data-clear="' + slug(c.tr) + '">limpar filtros</button> <span class="muted" data-cnt="' + slug(c.tr) + '"></span></th><th><input class="flt" data-col="de" data-car="' + slug(c.tr) + '" placeholder="Filtrar" aria-label="Filtrar data de transporte" value="' + esc(FLT[slug(c.tr) + '|de'] || '') + '"></th></tr></thead><tbody>' +
+      c.rows.map(r => '<tr data-d="' + isoToBR(r.d) + '" data-nf="' + r.nf + '" data-cte="' + esc(String(r.cte || '').toLowerCase()) + '" data-pl="' + esc(r.pl.toLowerCase()) + '" data-mot="' + esc(r.mot.toLowerCase()) + '" data-de="' + isoToBR(r.de) + '" data-vf="' + r.vf + '" data-ve="' + r.ve + '" data-dif="' + r.dif + '" data-vfisc="' + r.vfisc + '" data-compl="' + r.compl + '" data-vfis="' + r.vfis + '"><td class="nowrap">' + isoToBR(r.d) + '</td><td class="num">' + r.nf + '</td><td class="num">' + esc(r.cte || '—') +
         '</td><td class="placa">' + esc(r.pl) + '</td><td class="mot">' + esc(r.mot) + '</td><td class="num col-divider">' + fmt2(r.vf) + '</td><td class="num">' + fmt2(r.ve) +
         '</td><td class="num dif-col">' + fmt2(r.dif) + '</td><td class="num col-divider">' + fmt2(r.tar) + '</td><td class="num col-divider">' + fmt2(r.vfisc) +
         '</td><td class="num dif-col">' + fmt2(r.compl) + '</td><td class="num total-col">' + fmt2(r.vfis) + '</td><td class="ctr nowrap">' + isoToBR(r.de) + '</td></tr>').join('') +
@@ -692,6 +716,7 @@ function renderFech(from, to) {
         '</td><td class="num">' + fmt2(t.vfis) + '</td><td></td></tr></tfoot></table></div></div></div>';
   }).join('');
   $('tabValFech').textContent = fmtMoney(T.vfis);
+  document.querySelectorAll('#fechList .carrier').forEach(applyFlt);
 
   if (FVIEW !== 'geral' && FVIEW !== 'todas' && !cl.some(c => c.tr === FVIEW)) FVIEW = 'geral';
   const navItems = [['geral', 'Panorama geral']].concat(cl.map(c => [c.tr, c.tr])).concat(cl.length > 1 ? [['todas', 'Tudo junto']] : []);
@@ -842,6 +867,14 @@ function init() {
   buildChips();
   document.querySelectorAll('#modeSeg button').forEach(b => b.addEventListener('click', () => setKey(b.dataset.k, true)));
   document.querySelectorAll('.tab').forEach(b => b.addEventListener('click', () => showTab(b.dataset.tab)));
+  $('fechList').addEventListener('input', e => {
+    const i = e.target; if (!i.classList || !i.classList.contains('flt')) return;
+    FLT[i.dataset.car + '|' + i.dataset.col] = i.value; applyFlt(i.closest('.carrier'));
+  });
+  $('fechList').addEventListener('click', e => {
+    const b = e.target.closest('[data-clear]'); if (!b) return;
+    const card = b.closest('.carrier'); card.querySelectorAll('.flt').forEach(i => { i.value = ''; delete FLT[i.dataset.car + '|' + i.dataset.col]; }); applyFlt(card);
+  });
   $('paneFech').addEventListener('click', e => {
     const a = e.target.closest('[data-view]');
     if (a) { e.preventDefault(); setFView(a.dataset.view); }
