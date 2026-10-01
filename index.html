@@ -358,13 +358,6 @@
     <div class="filter-chips" id="monthChips"></div>
     <button class="chip" id="btnClear" style="font-weight:700;">Período completo</button>
     <span class="filter-info" id="filterInfo"></span>
-    <div class="filter-sub hide" id="fechSeg">
-      <span class="filter-label">Fechamentos</span>
-      <div class="seg">
-        <button type="button" data-m="plan" class="active">Períodos definidos (planilha)</button>
-        <button type="button" data-m="filtro">Usar o período do filtro acima</button>
-      </div>
-    </div>
   </div>
 
   <div class="tabs" role="tablist">
@@ -541,7 +534,7 @@ function computeRange() {
 }
 const byNf = (a, b) => a.nf - b.nf;
 
-let TAB = 'dia', FMODE = 'plan', FVIEW = 'geral', CUR_FROM = '', CUR_TO = '';
+let TAB = 'dia', FMODE = 'filtro', FVIEW = 'geral', CUR_FROM = '', CUR_TO = '';
 
 function tile(cls, label, value, unit, sub) {
   return '<div class="stat-tile ' + cls + '"><div class="label">' + label + '</div><div class="value">' + value +
@@ -800,7 +793,6 @@ function showTab(name) {
   TAB = name;
   $('paneDia').hidden = name !== 'dia';
   $('paneFech').hidden = name !== 'fech';
-  $('fechSeg').classList.toggle('hide', name !== 'fech');
   document.querySelectorAll('.tab').forEach(b => { const on = b.dataset.tab === name; b.classList.toggle('active', on); b.setAttribute('aria-selected', on); });
   render(CUR_FROM, CUR_TO);
 }
@@ -849,7 +841,6 @@ function init() {
   $('btnClear').addEventListener('click', () => setFilter(MIN_DATE, MAX_DATE, true));
   buildChips();
   document.querySelectorAll('#modeSeg button').forEach(b => b.addEventListener('click', () => setKey(b.dataset.k, true)));
-  document.querySelectorAll('#fechSeg .seg button').forEach(b => b.addEventListener('click', () => setFMode(b.dataset.m)));
   document.querySelectorAll('.tab').forEach(b => b.addEventListener('click', () => showTab(b.dataset.tab)));
   $('paneFech').addEventListener('click', e => {
     const a = e.target.closest('[data-view]');
