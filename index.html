@@ -314,14 +314,12 @@
   #fGeral th { white-space: nowrap; }
   [hidden] { display: none !important; }
   .subnav { display: flex; gap: 6px; flex-wrap: wrap; margin: 0 0 14px; }
-  .subnav .chip { font-size: 12.5px; padding: 6px 14px; }
+  .subnav .chip { font-size: 12.5px; padding: 6px 14px; text-transform: uppercase; letter-spacing: .03em; }
   .carrier .hero { margin-bottom: 12px; }
   .stat-tile .unit { font-weight: 500; }
   @media (max-width: 820px) { .tabs { overflow-x: auto; } .tab { white-space: nowrap; } }
   @media print {
     .subnav { display: none; }
-    .carrier { break-before: page; }
-    #paneFech.single .carrier { break-before: auto; }
   }
   /* Impressão: mantém o layout de computador mesmo com a folha mais estreita que 820px */
   @media print {
@@ -339,7 +337,13 @@
     .banner-divider { display: block; }
     .banner-col .value-lg { white-space: nowrap; }
     .tar-lines div { white-space: nowrap; }
+    .table-scroll { overflow: visible; }
+    td.mot { white-space: normal; }
   }
+  /* medição usada antes de imprimir (ver fitPrint) */
+  .measure .page { max-width: 1160px; width: 1160px; padding: 0; }
+  .measure .table-scroll { overflow: visible; }
+  .measure td.mot { white-space: normal; }
 
 </style>
 </head>
@@ -776,12 +780,12 @@ function renderFech(from, to) {
   $('tabValFech').textContent = fmtMoney(T.vfis);
   document.querySelectorAll('#fechList .carrier').forEach(applyFlt);
 
-  if (FVIEW !== 'geral' && FVIEW !== 'todas' && !cl.some(c => c.tr === FVIEW)) FVIEW = 'geral';
-  const navItems = [['geral', 'Panorama geral']].concat(cl.map(c => [c.tr, c.tr])).concat(cl.length > 1 ? [['todas', 'Tudo junto']] : []);
+  if (FVIEW !== 'geral' && !cl.some(c => c.tr === FVIEW)) FVIEW = 'geral';
+  const navItems = [['geral', 'Panorama geral']].concat(cl.map(c => [c.tr, c.tr]));
   $('fechNav').innerHTML = navItems.map(([v, l]) => '<button type="button" class="chip' + (v === FVIEW ? ' active' : '') + '" data-view="' + esc(v) + '">' + esc(l) + '</button>').join('');
-  $('fGeral').hidden = !(FVIEW === 'geral' || FVIEW === 'todas');
-  document.querySelectorAll('#fechList .carrier').forEach((el, i) => { el.hidden = !(FVIEW === 'todas' || cl[i].tr === FVIEW); });
-  $('paneFech').classList.toggle('single', FVIEW !== 'geral' && FVIEW !== 'todas');
+  $('fGeral').hidden = FVIEW !== 'geral';
+  document.querySelectorAll('#fechList .carrier').forEach((el, i) => { el.hidden = cl[i].tr !== FVIEW; });
+  $('paneFech').classList.toggle('single', FVIEW !== 'geral');
   return { cl, T };
 }
 
@@ -909,6 +913,23 @@ async function refresh(manual) {
     paintStatus();
   } finally { BUSY = false; b.classList.remove('busy'); b.textContent = '↻ Atualizar'; }
 }
+/* Antes de imprimir: se alguma tabela for mais larga que a folha, reduz a escala de todas para não cortar */
+function fitPrint() {
+  const pg = document.querySelector('.page');
+  pg.style.maxWidth = ''; pg.style.zoom = '';
+  document.body.classList.add('measure');
+  let r = 1;
+  document.querySelectorAll('.table-scroll').forEach(w => {
+    if (w.offsetParent === null) return;
+    const t = w.querySelector('table'); if (!t) return;
+    if (t.offsetWidth > w.clientWidth + 1) r = Math.min(r, w.clientWidth / t.offsetWidth);
+  });
+  document.body.classList.remove('measure');
+  if (r < 1) { pg.style.maxWidth = Math.ceil(1160 / r) + 'px'; pg.style.zoom = (0.62 * r).toFixed(3); }
+}
+function unfitPrint() { const pg = document.querySelector('.page'); pg.style.maxWidth = ''; pg.style.zoom = ''; }
+window.addEventListener('beforeprint', fitPrint);
+window.addEventListener('afterprint', unfitPrint);
 function init() {
   ingest(DATA.rows);
   CUR_FROM = MIN_DATE; CUR_TO = MAX_DATE;
