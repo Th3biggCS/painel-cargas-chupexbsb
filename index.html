@@ -289,6 +289,39 @@
   .flt.on { border-color: var(--brand-blue); background: #eaf2fc; }
   .flt-row .flt-clear { font-size: 11px; color: var(--brand-blue); background: none; border: 0; cursor: pointer; padding: 0 4px; text-decoration: underline; }
   @media print { .flt-row { display: none; } }
+  /* AJUDA */
+  .help-ov { position: fixed; inset: 0; z-index: 60; background: rgba(8,24,44,.55); display: flex; align-items: center; justify-content: center; padding: 16px; backdrop-filter: blur(2px); }
+  .help-card { background: var(--surface); width: 100%; max-width: 640px; max-height: calc(100vh - 32px); overflow: auto; border-radius: 16px; box-shadow: 0 24px 60px rgba(0,0,0,.35); border-top: 5px solid var(--brand-green); }
+  .help-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 18px 22px 8px; }
+  .help-head h2 { margin: 0; font-size: 19px; color: var(--brand-blue-dark); }
+  .help-head p { margin: 2px 0 0; font-size: 12.5px; color: var(--muted); }
+  .help-x { border: 0; background: var(--page); color: var(--text-secondary); width: 32px; height: 32px; border-radius: 50%; font-size: 18px; cursor: pointer; flex: none; }
+  .help-x:hover { background: var(--grid); }
+  .help-body { padding: 6px 22px 22px; display: grid; gap: 12px; }
+  .help-sec { border: 1px solid var(--grid); border-radius: 12px; padding: 14px 16px; background: #fff; }
+  .help-sec h3 { margin: 0 0 8px; font-size: 13px; letter-spacing: .04em; text-transform: uppercase; color: var(--brand-blue); }
+  .help-sec p, .help-sec li { font-size: 13.5px; line-height: 1.5; color: var(--text-primary); margin: 0; }
+  .help-sec ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
+  .os-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .os-box { background: var(--page); border-radius: 10px; padding: 10px 12px; }
+  .os-box .os { font-size: 11.5px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+  .keys { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; font-size: 12px; color: var(--muted); }
+  kbd { font: inherit; font-size: 12.5px; font-weight: 700; background: #fff; color: var(--text-primary); border: 1px solid var(--baseline); border-bottom-width: 3px; border-radius: 6px; padding: 3px 8px; }
+  .help-note { margin-top: 8px !important; font-size: 12.5px !important; color: var(--text-secondary) !important; }
+  .help-contact { display: flex; align-items: center; gap: 14px; background: linear-gradient(135deg, #003D82 0%, #0057B8 55%, #00793B 100%); color: #fff; border-radius: 14px; padding: 16px 18px; flex-wrap: wrap; }
+  .help-av { width: 48px; height: 48px; border-radius: 50%; background: rgba(255,255,255,.18); display: grid; place-items: center; font-weight: 800; font-size: 17px; letter-spacing: .02em; flex: none; }
+  .help-who { flex: 1; min-width: 190px; }
+  .help-who b { display: block; font-size: 15px; }
+  .help-who span { display: block; font-size: 12.5px; opacity: .85; margin-top: 2px; }
+  .help-who .tel { font-size: 14px; opacity: 1; margin-top: 6px; font-variant-numeric: tabular-nums; font-weight: 600; }
+  .help-wa { display: inline-flex; align-items: center; gap: 8px; background: #25D366; color: #06331a; font-weight: 700; font-size: 13.5px; text-decoration: none; border-radius: 999px; padding: 10px 16px; }
+  .help-wa:hover { filter: brightness(1.06); }
+  .live .chip.help-btn { margin-left: 4px; background: var(--brand-green-dark); border-color: var(--brand-green-dark); color: #fff; font-weight: 700; }
+  .live .chip.help-btn:hover { background: var(--brand-green); border-color: var(--brand-green); }
+  .live .chip.help-btn:focus-visible { outline: 2px solid var(--brand-blue); outline-offset: 2px; }
+  @media (max-width: 520px) { .os-row { grid-template-columns: 1fr; } }
+  @media print { .help-ov, .help-btn { display: none !important; } }
+
   .sub-per { display: block; font-weight: 500; font-size: 11.5px; color: var(--muted); margin-top: 2px; }
   #tblVisao td.link { min-width: 215px; }
   #fGeral th { white-space: nowrap; }
@@ -338,7 +371,7 @@
       <div class="period" id="hdrPeriod">—</div>
       <div class="loc" id="hdrLoc">—</div>
       <div id="hdrGerado">—</div>
-      <div class="live"><button type="button" class="chip" id="btnRefresh" title="Buscar os dados mais recentes da base online">↻ Atualizar</button></div>
+      <div class="live"><button type="button" class="chip" id="btnRefresh" title="Buscar os dados mais recentes da base online">↻ Atualizar</button> <button type="button" class="chip help-btn" id="btnHelp" aria-haspopup="dialog">? Ajuda</button></div>
     </div>
   </div>
 
@@ -419,6 +452,38 @@
     <div id="fechList"></div>
   </section>
 
+</div>
+
+<div class="help-ov" id="helpOv" hidden>
+  <div class="help-card" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
+    <div class="help-head">
+      <div><h2 id="helpTitle">Ajuda</h2><p>Dicas rápidas para usar o Painel de Monitoramento de Cargas</p></div>
+      <button type="button" class="help-x" id="helpClose" aria-label="Fechar">✕</button>
+    </div>
+    <div class="help-body">
+      <div class="help-sec">
+        <h3>Atualizar os dados</h3>
+        <p>Clique em <b>↻ Atualizar</b> para trazer os números mais recentes da planilha online, sempre que uma carga for lançada ou alterada. Mesmo sem clicar, o painel confere a base sozinho a cada 5 minutos.</p>
+      </div>
+      <div class="help-sec">
+        <h3>Atalhos do teclado</h3>
+        <p>Se a página mostrar uma versão antiga, recarregue limpando a memória do navegador:</p>
+        <div class="os-row" style="margin-top:10px">
+          <div class="os-box"><div class="os">Windows</div><div class="keys"><kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>R</kbd></div></div>
+          <div class="os-box"><div class="os">Mac</div><div class="keys"><kbd>⌘ Cmd</kbd> + <kbd>Shift</kbd> + <kbd>R</kbd></div></div>
+        </div>
+      </div>
+      <div class="help-contact">
+        <div class="help-av">DS</div>
+        <div class="help-who">
+          <b>Douglas F. de Souza Santos</b>
+          <span>Gerente Administrativo/Comercial · MT/PI/MA</span>
+          <span class="tel">Dúvidas? WhatsApp <span style="white-space:nowrap">(66) 9 9640-7124</span></span>
+        </div>
+        <a class="help-wa" href="https://wa.me/5566996407124?text=Ol%C3%A1%20Douglas%2C%20estou%20com%20uma%20d%C3%BAvida%20sobre%20o%20Painel%20de%20Monitoramento%20de%20Cargas." target="_blank" rel="noopener">Chamar no WhatsApp</a>
+      </div>
+    </div>
+  </div>
 </div>
 <script>
 const DATA = {"snapshotAt": "", "csvUrl": "https://docs.google.com/spreadsheets/d/e/2PACX-1vRHiTgQSDVPo1uaKj922zjkoDWIw11LgO_MICw5ZMoNv0T9PygoxYuXGGf7Al-NOdeFLbUQfkRMI0Z2/pub?gid=87266211&single=true&output=csv", "rows": [], "cfg": [{"tr": "C E M TRANSPORTADORA", "ini": "2026-09-18", "fim": "2026-09-22", "cte": null}, {"tr": "FARINHA DA SERRA", "ini": "2026-09-23", "fim": "2026-09-25", "cte": null}, {"tr": "LUIGI CONSTRUÇÕES E TRANSPORTES LTDA", "ini": "2026-09-18", "fim": "2026-09-22", "cte": ["309", "310", "311"]}, {"tr": "PARANÁ", "ini": "2026-09-19", "fim": "2026-09-22", "cte": null}, {"tr": "MADEPINUS", "ini": "2026-09-19", "fim": "2026-09-22", "cte": null}, {"tr": "TF LOG", "ini": "2026-09-14", "fim": "2026-09-22", "cte": null}], "order": ["C E M TRANSPORTADORA", "FARINHA DA SERRA", "LUIGI CONSTRUÇÕES E TRANSPORTES LTDA", "PARANÁ", "MADEPINUS", "TF LOG", "TRADICIONAL ALIMENTOS"]};
@@ -737,7 +802,7 @@ function render(from, to) {
     $('hdrTitle').textContent = 'Diário de Entregas';
     $('hdrPeriod').textContent = isoToBR(from) + ' a ' + isoToBR(to);
     const lbl = KEY === 'ent' ? 'entrega' : 'NF';
-    $('hdrLoc').textContent = 'São Raimundo das Mangabeiras - MA · ' + plural(d.days.length, 'dia', 'dias') + (KEY === 'ent' ? ' de operação' : ' com NF') + ' · por data ' + (KEY === 'ent' ? 'de entrega' : 'da NF');
+    $('hdrLoc').textContent = 'São Raimundo das Mangabeiras - MA';
     $('filterInfo').textContent = full ? 'Exibindo o período completo (' + allDays.length + ' dias com ' + lbl + ')' : 'Exibindo ' + d.days.length + ' de ' + allDays.length + ' dias com ' + lbl;
   } else {
     const one = f.cl.find(c => c.tr === FVIEW);
@@ -746,7 +811,7 @@ function render(from, to) {
     else if (FMODE === 'plan' && f.cl.length) { a = f.cl.map(c => c.ini).sort()[0]; z = f.cl.map(c => c.fim).sort().slice(-1)[0]; }
     $('hdrTitle').textContent = one ? 'Fechamento — ' + one.tr : 'Fechamentos das Transportadoras';
     $('hdrPeriod').textContent = isoToBR(a) + ' a ' + isoToBR(z);
-    $('hdrLoc').textContent = 'São Raimundo das Mangabeiras - MA · ' + (one ? plural(one.t.n, 'CT-e', 'CT-e') : plural(f.cl.length, 'transportadora', 'transportadoras')) + ' · por data ' + (FMODE === 'plan' || KEY === 'ent' ? 'de entrega' : 'da NF');
+    $('hdrLoc').textContent = 'São Raimundo das Mangabeiras - MA';
     $('filterInfo').textContent = FMODE === 'plan' ? 'Cada transportadora no período definido na planilha (data de entrega)' : 'Fechamentos calculados pela data ' + (KEY === 'ent' ? 'de entrega' : 'da NF') + ' no período selecionado';
   }
   const dim = TAB === 'fech' && FMODE === 'plan';
@@ -826,10 +891,10 @@ const nowBR = () => { const n = new Date(), p = x => String(x).padStart(2, '0');
 let ST = { kind: 'snap', at: DATA.snapshotAt, msg: '' }, BUSY = false;
 function paintStatus() {
   const h = $('hdrGerado'); h.classList.toggle('err', ST.kind === 'err');
-  if (ST.kind === 'live') h.textContent = 'Base online atualizada em ' + ST.at;
+  if (ST.kind === 'live') h.textContent = 'Atualizado em ' + ST.at;
   else if (ST.kind === 'snap' && !ST.at) h.textContent = 'Carregando a base online…';
   else if (ST.kind === 'err') h.textContent = 'Não foi possível atualizar (' + ST.msg + ')' + (ST.at ? ' · exibindo dados de ' + ST.at : '');
-  else h.textContent = 'Dados de ' + ST.at + ' · clique em Atualizar para buscar a base online';
+  else h.textContent = 'Dados de ' + ST.at;
 }
 async function refresh(manual) {
   if (BUSY) return; BUSY = true;
@@ -880,6 +945,11 @@ function init() {
     if (a) { e.preventDefault(); setFView(a.dataset.view); }
   });
   $('btnRefresh').addEventListener('click', () => refresh(true));
+  const hov = $('helpOv'), openHelp = () => { hov.hidden = false; $('helpClose').focus(); }, closeHelp = () => { hov.hidden = true; $('btnHelp').focus(); };
+  $('btnHelp').addEventListener('click', openHelp);
+  $('helpClose').addEventListener('click', closeHelp);
+  hov.addEventListener('click', e => { if (e.target === hov) closeHelp(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !hov.hidden) closeHelp(); });
   setFilter(MIN_DATE, MAX_DATE);
   refresh(false);
   setInterval(() => refresh(false), 5 * 60 * 1000);
