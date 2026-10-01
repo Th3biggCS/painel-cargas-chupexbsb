@@ -314,7 +314,7 @@
   #fGeral th { white-space: nowrap; }
   [hidden] { display: none !important; }
   .subnav { display: flex; gap: 6px; flex-wrap: wrap; margin: 0 0 14px; }
-  .subnav .chip { font-size: 12.5px; padding: 6px 14px; text-transform: uppercase; letter-spacing: .03em; }
+  .subnav .chip { font-size: 12.5px; padding: 6px 14px; text-transform: uppercase !important; letter-spacing: .03em; }
   .carrier .hero { margin-bottom: 12px; }
   .stat-tile .unit { font-weight: 500; }
   @media (max-width: 820px) { .tabs { overflow-x: auto; } .tab { white-space: nowrap; } }
@@ -781,7 +781,7 @@ function renderFech(from, to) {
   document.querySelectorAll('#fechList .carrier').forEach(applyFlt);
 
   if (FVIEW !== 'geral' && !cl.some(c => c.tr === FVIEW)) FVIEW = 'geral';
-  const navItems = [['geral', 'Panorama geral']].concat(cl.map(c => [c.tr, c.tr]));
+  const navItems = [['geral', 'PANORAMA GERAL']].concat(cl.map(c => [c.tr, c.tr]));
   $('fechNav').innerHTML = navItems.map(([v, l]) => '<button type="button" class="chip' + (v === FVIEW ? ' active' : '') + '" data-view="' + esc(v) + '">' + esc(l) + '</button>').join('');
   $('fGeral').hidden = FVIEW !== 'geral';
   document.querySelectorAll('#fechList .carrier').forEach((el, i) => { el.hidden = cl[i].tr !== FVIEW; });
